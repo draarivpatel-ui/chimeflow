@@ -25,3 +25,5 @@ Code: https://github.com/draarivpatel-ui/chimeflow
 <!-- voiceover:start -->
 Voice calls fail. Customers still need an answer. ChimeFlow is an open source workbench for Amazon Chime SDK, End User Messaging and SES. Break a carrier, watch the failover, press real keypad tones, and see personal data masked before anything leaves. Export the payloads. Every number is yours to edit. Try it in your browser.
 <!-- voiceover:end -->
+
+Video: https://youtu.be/3cT_ILXYH_Q
