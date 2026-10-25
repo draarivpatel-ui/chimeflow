@@ -1,0 +1,11 @@
+{
+  "name": "chimeflow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Omnichannel triage, guardrail and failover workbench for AWS Communication Developer Services. One static page, no dependencies.",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "author": "Aariv Patel",
+  "license": "MIT"
+}

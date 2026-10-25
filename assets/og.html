@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ChimeFlow social card</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-body); overflow: hidden; }
+  .card { position: relative; width: 1200px; height: 630px; padding: 64px 72px; box-sizing: border-box; border: 2px solid var(--color-ink); }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: var(--font-display); font-size: 36px; }
+  .brand i { display: block; width: 40px; height: 40px; background: var(--color-ink); position: relative; }
+  .brand i::after { content: ""; position: absolute; left: 7px; right: 7px; top: 19px; height: 3px; background: var(--color-signal); }
+  h1 { margin: 46px 0 0; font-family: var(--font-display); font-weight: 400; font-size: 118px; line-height: 0.98; letter-spacing: -0.01em; max-width: 900px; }
+  .lanes { position: absolute; left: 72px; right: 72px; bottom: 56px; height: 120px; }
+  .lane { position: absolute; left: 0; right: 0; height: 36px; border-top: 1px solid var(--color-rule-strong); }
+  .bar { position: absolute; top: 5px; height: 26px; border: 2px solid var(--color-trace); background: var(--color-trace); }
+  .bar.fail { background: var(--color-signal-tint); border-color: var(--color-signal-deep); }
+  .bar.human { background: var(--color-ink); border-color: var(--color-ink); }
+  .lbl { position: absolute; left: 0; top: 8px; font-size: 16px; font-weight: 600; }
+</style></head><body>
+<div class="card">
+  <div class="brand"><i></i>ChimeFlow</div>
+  <h1>Voice fails. The message still lands.</h1>
+  <div class="lanes">
+    <div class="lane" style="top:0"><div class="bar fail" style="left:110px;width:300px"></div><div class="bar fail" style="left:430px;width:300px"></div><span class="lbl">Voice</span></div>
+    <div class="lane" style="top:40px"><div class="bar" style="left:740px;width:60px"></div><span class="lbl">Text</span></div>
+    <div class="lane" style="top:80px"><div class="bar human" style="left:900px;width:120px"></div><span class="lbl">Human</span></div>
+  </div>
+</div></body></html>

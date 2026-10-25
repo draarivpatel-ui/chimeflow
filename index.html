@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChimeFlow | Omnichannel triage and failover workbench for AWS Communication Developer Services</title>
+  <meta name="description" content="Open-source workbench for designing, simulating and exporting agentic voice, SMS, WhatsApp and email flows on Amazon Chime SDK, AWS End User Messaging and Amazon SES, with PII redaction, TCPA quiet hours and carrier failover.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ChimeFlow">
+  <meta property="og:title" content="ChimeFlow | Voice fails. The message still lands.">
+  <meta property="og:description" content="Break a carrier on purpose, watch the failover, press real DTMF tones, and export Chime SDK, End User Messaging and SES payloads.">
+  <meta property="og:url" content="https://aariv.me/chimeflow/">
+  <meta property="og:image" content="https://aariv.me/chimeflow/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ChimeFlow failover timeline showing a voice timeout, an SMS delivery and a human bridge.">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ChimeFlow | Voice fails. The message still lands.">
+  <meta name="twitter:description" content="An open-source omnichannel triage, guardrail and failover workbench for AWS Communication Developer Services.">
+  <meta name="twitter:image" content="https://aariv.me/chimeflow/assets/og.png">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2315171A'/%3E%3Cpath d='M5 21h7l3-10 4 14 3-8h5' fill='none' stroke='%23E05A2B' stroke-width='2.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the workbench</a>
+
+  <header class="masthead">
+    <div class="masthead__inner">
+      <a class="wordmark" href="#top" aria-label="ChimeFlow, back to top">
+        <svg class="wordmark__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" class="wordmark__tile"/><path d="M5 21h7l3-10 4 14 3-8h5" class="wordmark__wave"/></svg>
+        <span class="wordmark__text">ChimeFlow</span>
+      </a>
+      <nav class="masthead__nav" aria-label="Sections">
+        <a href="#bench">Failover bench</a>
+        <a href="#inspector">Message inspector</a>
+        <a href="#simulator">Simulator</a>
+        <a href="#export">Export</a>
+        <a href="#limits">Limits</a>
+      </nav>
+      <a class="masthead__repo" href="https://github.com/draarivpatel-ui/chimeflow" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 7 4 12l5 5M15 7l5 5-5 5" class="icon-stroke"/></svg>
+        <span>Source</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <h1 id="hero-title" class="hero__title">Voice fails. The message still lands.</h1>
+        <p class="hero__lede">ChimeFlow is a workbench for teams building agentic conversations on AWS Communication Developer Services. Design a flow across Amazon Chime SDK voice, AWS End User Messaging and Amazon SES, break a carrier on purpose, and watch the guardrails hold.</p>
+        <p class="hero__actions">
+          <a class="btn btn--primary" href="#bench">Open the failover bench</a>
+          <a class="btn btn--quiet" href="#simulator">Press a keypad</a>
+        </p>
+      </div>
+      <figure class="hero__figure" aria-labelledby="hero-cap">
+        <div id="hero-dag" class="dag-host"></div>
+        <figcaption id="hero-cap">Live output of the same engine that powers the bench. Here the clinic reminder call times out twice, text takes over, and the recipient asks for a nurse.</figcaption>
+      </figure>
+    </section>
+
+    <noscript>
+      <div class="noscript">
+        <p><strong>The workbench needs JavaScript.</strong> It runs entirely in your browser with no network calls, so there is nothing to wait for. Enable scripts to use the failover bench, the message inspector, the keypad simulator and the AWS exporters.</p>
+        <p>Without scripts, this page still tells you what ChimeFlow checks: SMS encoding and segment math (GSM-7 and UCS-2), Luhn-verified card masking, TCPA quiet hours from 8:00 AM to 9:00 PM recipient local time, and Chime SDK, End User Messaging and SES payload shapes. The source and the tests are on GitHub.</p>
+      </div>
+    </noscript>
+
+    <section class="bench" id="bench" aria-labelledby="bench-title">
+      <header class="section-head">
+        <h2 id="bench-title">Failover bench</h2>
+        <p>Pick a scenario, set the recipient clock, then break channels. The engine replays the conversation deterministically and shows every attempt, every blocked channel and the reason.</p>
+      </header>
+
+      <div class="bench__grid">
+        <form class="panel controls" id="bench-form" aria-label="Scenario and failure controls" autocomplete="off">
+          <div class="field">
+            <label for="scenario">Scenario</label>
+            <select id="scenario"></select>
+            <p class="field__hint" id="scenario-summary"></p>
+          </div>
+
+          <fieldset class="field-group">
+            <legend>Recipient clock</legend>
+            <div class="field">
+              <label for="send-utc">Send time in UTC</label>
+              <input type="datetime-local" id="send-utc">
+            </div>
+            <div class="field">
+              <label for="time-zone">Recipient time zone</label>
+              <select id="time-zone">
+                <option value="America/New_York">New York</option>
+                <option value="America/Chicago">Chicago</option>
+                <option value="America/Los_Angeles">Los Angeles</option>
+                <option value="Europe/London">London</option>
+                <option value="Asia/Kolkata">Kolkata</option>
+                <option value="Pacific/Auckland">Auckland</option>
+              </select>
+            </div>
+            <p class="field__hint" id="local-clock" aria-live="polite"></p>
+            <p class="chip-row">
+              <button type="button" class="chip" id="preset-day">Midday</button>
+              <button type="button" class="chip" id="preset-night">10:15 PM local</button>
+            </p>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend>Break a channel</legend>
+            <div class="field field--inline">
+              <label for="fail-CHIME_PSTN_VOICE">Chime PSTN voice</label>
+              <select id="fail-CHIME_PSTN_VOICE" data-channel="CHIME_PSTN_VOICE"></select>
+            </div>
+            <div class="field field--inline">
+              <label for="fail-CHIME_WEBRTC">Chime in-app audio</label>
+              <select id="fail-CHIME_WEBRTC" data-channel="CHIME_WEBRTC"></select>
+            </div>
+            <div class="field field--inline">
+              <label for="fail-PINPOINT_SMS">SMS</label>
+              <select id="fail-PINPOINT_SMS" data-channel="PINPOINT_SMS"></select>
+            </div>
+            <div class="field field--inline">
+              <label for="fail-PINPOINT_WHATSAPP">WhatsApp</label>
+              <select id="fail-PINPOINT_WHATSAPP" data-channel="PINPOINT_WHATSAPP"></select>
+            </div>
+            <div class="field field--inline">
+              <label for="fail-SES_EMAIL">Email</label>
+              <select id="fail-SES_EMAIL" data-channel="SES_EMAIL"></select>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend>Guardrails</legend>
+            <div class="check">
+              <input type="checkbox" id="opt-out-sms">
+              <label for="opt-out-sms">Recipient already sent STOP by SMS</label>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="safety-override">
+              <label for="safety-override">Safety-critical quiet hours override</label>
+            </div>
+            <p class="field__hint">The override only applies to scenarios flagged safety critical. Whether you may use one is a question for your counsel, not this tool.</p>
+          </fieldset>
+
+          <div class="field">
+            <label for="replies">Recipient replies</label>
+            <input type="text" id="replies" spellcheck="false">
+            <p class="field__hint">Comma separated. Use digits, plain words, or the word timeout. Words like "chest pain" trigger a red flag escalation.</p>
+          </div>
+        </form>
+
+        <div class="bench__out">
+          <div class="stat-row" id="bench-stats" role="group" aria-label="Trace summary"></div>
+          <p class="sr-only" id="bench-live" aria-live="polite"></p>
+          <div class="panel panel--flush">
+            <div id="bench-dag" class="dag-host"></div>
+          </div>
+          <div class="legend" aria-hidden="true">
+            <span class="legend__item"><i class="swatch swatch--ok"></i>Delivered</span>
+            <span class="legend__item"><i class="swatch swatch--fail"></i>Failed attempt</span>
+            <span class="legend__item"><i class="swatch swatch--human"></i>Human bridge</span>
+          </div>
+          <h3 class="h3">Step by step</h3>
+          <ol class="steps" id="bench-steps"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="inspector" id="inspector" aria-labelledby="inspector-title">
+      <header class="section-head">
+        <h2 id="inspector-title">Message inspector</h2>
+        <p>Type any agent reply. The inspector counts encoding units the way carriers do, masks sensitive values before anything leaves the step, and prices ten thousand sends from rates you control.</p>
+      </header>
+
+      <div class="inspector__grid">
+        <div class="panel">
+          <div class="field">
+            <label for="msg">Agent reply</label>
+            <textarea id="msg" rows="6" spellcheck="false"></textarea>
+          </div>
+          <p class="chip-row" aria-label="Sample edits">
+            <button type="button" class="chip" id="add-quote">Add a smart apostrophe</button>
+            <button type="button" class="chip" id="add-emoji">Add an emoji</button>
+            <button type="button" class="chip" id="add-brace">Add a curly brace</button>
+            <button type="button" class="chip" id="add-long">Make it long</button>
+          </p>
+          <h3 class="h3">Masked preview</h3>
+          <p class="mono-block" id="masked" aria-live="polite"></p>
+          <h3 class="h3">What was masked</h3>
+          <ul class="finding-list" id="findings"></ul>
+        </div>
+
+        <div class="panel">
+          <div class="meter" id="meter" role="group" aria-label="Encoding and segments"></div>
+          <div class="segments" id="segments" aria-label="Segment fill"></div>
+          <dl class="kv" id="sms-kv"></dl>
+          <div id="forcing" class="forcing"></div>
+          <h3 class="h3">Rates</h3>
+          <div class="rate-row">
+            <div class="field">
+              <label for="rate-seg">Dollars per segment</label>
+              <input type="number" id="rate-seg" min="0" step="0.0005" inputmode="decimal">
+            </div>
+            <div class="field">
+              <label for="rate-carrier">Carrier fee per segment</label>
+              <input type="number" id="rate-carrier" min="0" step="0.0005" inputmode="decimal">
+            </div>
+          </div>
+          <p class="field__hint">These two defaults are placeholders, not AWS prices. Replace them with the rates on your own bill.</p>
+          <h3 class="h3">Opt-out tester</h3>
+          <div class="field">
+            <label for="inbound">Inbound reply from the recipient</label>
+            <input type="text" id="inbound" value="STOP" spellcheck="false">
+          </div>
+          <p class="verdict" id="optout-result" aria-live="polite"></p>
+          <p class="verdict" id="tcpa-result" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="simulator" id="simulator" aria-labelledby="sim-title">
+      <header class="section-head">
+        <h2 id="sim-title">Call and message simulator</h2>
+        <p>Run the scenario from the bench as a live conversation. When the prompt is a voice call, press the keypad. Each key plays its real dual tone, a low and a high sine wave added together, and the state machine branches on the digit.</p>
+      </header>
+
+      <div class="sim__grid">
+        <div class="panel phone" id="phone">
+          <div class="phone__status">
+            <span id="sim-channel" class="tag"></span>
+            <span id="sim-node" class="mono"></span>
+          </div>
+          <p class="phone__prompt" id="sim-prompt"></p>
+          <div class="keypad" id="keypad" role="group" aria-label="Phone keypad"></div>
+          <p class="mono phone__tone" id="sim-tone" aria-live="polite">Waiting for a key.</p>
+          <div class="field field--row">
+            <label for="sim-text">Reply in words</label>
+            <input type="text" id="sim-text" spellcheck="false">
+            <button type="button" class="btn btn--small" id="sim-send">Send reply</button>
+          </div>
+          <p class="chip-row">
+            <button type="button" class="chip" id="sim-timeout">No answer</button>
+            <button type="button" class="chip" id="sim-restart">Start over</button>
+          </p>
+          <div class="check">
+            <input type="checkbox" id="sim-sound" checked>
+            <label for="sim-sound">Play keypad tones</label>
+          </div>
+        </div>
+        <div class="sim__log">
+          <h3 class="h3">State machine</h3>
+          <ol class="path" id="sim-path" aria-label="Path so far"></ol>
+          <h3 class="h3">Conversation log</h3>
+          <ol class="log" id="sim-log" role="log" aria-live="polite"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="export" id="export" aria-labelledby="export-title">
+      <header class="section-head">
+        <h2 id="export-title">AWS export</h2>
+        <p>Templates for the selected scenario, built from the documented request shapes. Each tab is checked against the required fields in the docs before it is shown. Nothing here has been deployed or sent.</p>
+      </header>
+      <div class="panel panel--flush">
+        <div class="tabs" role="tablist" aria-label="Export targets" id="export-tabs"></div>
+        <div class="export__bar">
+          <span class="mono" id="export-status" aria-live="polite"></span>
+          <span class="export__actions">
+            <button type="button" class="btn btn--small" id="export-copy">Copy</button>
+            <button type="button" class="btn btn--small btn--quiet" id="export-download">Download bundle</button>
+          </span>
+        </div>
+        <pre class="code" id="export-panel" role="tabpanel" tabindex="0"><code id="export-code"></code></pre>
+      </div>
+    </section>
+
+    <section class="limits" id="limits" aria-labelledby="limits-title">
+      <header class="section-head">
+        <h2 id="limits-title">What this is, and what it is not</h2>
+      </header>
+      <ul class="limit-list">
+        <li><strong>Planning model, not a measurement.</strong> Latencies, costs and the response delay are editable fixtures. They show how a flow behaves, not what your carriers will do.</li>
+        <li><strong>Templates, not deployments.</strong> The exporters follow the request shapes in the AWS documentation. They have not been sent to a live account.</li>
+        <li><strong>Policy gate, not legal advice.</strong> The 8:00 AM to 9:00 PM check is a conservative engineering rule. Which rules bind your messages depends on who you are texting and why.</li>
+        <li><strong>Fictional organisations.</strong> The clinic, utility, airline and credit union are made up. There are no customers and no telemetry.</li>
+        <li><strong>Redaction is pattern based.</strong> It catches the formats it knows, such as Luhn-valid card numbers and checksummed routing numbers. It will miss a name written in a sentence.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <p class="footer__line">Every organisation here is fictional. Every number is yours to edit.</p>
+      <p class="footer__meta">ChimeFlow is MIT licensed. Built by Aariv Patel for the AWS Communication Developer Services Agentic AI Partner Hackathon. Runs fully in your browser with no network calls.</p>
+      <p class="footer__links"><a href="https://github.com/draarivpatel-ui/chimeflow" rel="noopener">Source on GitHub</a></p>
+    </div>
+  </footer>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
