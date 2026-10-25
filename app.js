@@ -114,25 +114,43 @@
 
   var dagCounter = 0;
 
-  function niceStep(total) {
+  function niceStep(total, maxTicks) {
     var steps = [500, 1000, 2000, 5000, 10000, 20000, 30000, 60000];
     for (var i = 0; i < steps.length; i++) {
-      if (total / steps[i] <= 8) { return steps[i]; }
+      if (total / steps[i] <= (maxTicks || 8)) { return steps[i]; }
     }
     return 120000;
   }
 
-  function renderDag(host, trace) {
+  /* Narrow screens get a diagram drawn for their width, not a wide one that scrolls. */
+  var dagHosts = [];
+  var compactQuery = (typeof window.matchMedia === 'function') ? window.matchMedia('(max-width: 40em)') : null;
+  function isCompact() { return !!(compactQuery && compactQuery.matches); }
+
+  function drawDag(host, trace) {
+    var compact = isCompact();
+    host.setAttribute('data-compact', compact ? 'true' : 'false');
+    renderDag(host, trace, compact);
+  }
+
+  function showDag(host, trace) {
+    var known = dagHosts.filter(function (h) { return h.host === host; })[0];
+    if (known) { known.trace = trace; } else { dagHosts.push({ host: host, trace: trace }); }
+    drawDag(host, trace);
+  }
+
+  function renderDag(host, trace, compact) {
     clear(host);
     dagCounter += 1;
     var uid = 'dag' + dagCounter;
-    var W = 960;
-    var gutter = 132;
-    var padR = 28;
+    var W = compact ? 420 : 960;
+    var gutter = compact ? 62 : 132;
+    var padR = compact ? 14 : 28;
     var top = 30;
     var laneH = 56;
+    var charW = compact ? 7.2 : 6.8;
     var lanes = CF.LANES;
-    var H = top + lanes.length * laneH + 30;
+    var H = top + lanes.length * laneH + 12;
     var total = Math.max(trace.totalMs, 1000);
     var plotW = W - gutter - padR;
     var x = function (ms) { return gutter + (ms / total) * plotW; };
@@ -141,7 +159,7 @@
     var attemptCount = 0;
     trace.steps.forEach(function (s) { attemptCount += s.attempts.length; });
     var root = svg('svg', {
-      'class': 'dag', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+      'class': 'dag' + (compact ? ' dag--compact' : ''), viewBox: '0 0 ' + W + ' ' + H, role: 'img',
       'aria-labelledby': uid + '-t ' + uid + '-d', focusable: 'false'
     });
     root.appendChild(svg('title', { id: uid + '-t', text: 'Omnichannel sequence and failover diagram' }));
@@ -150,10 +168,10 @@
     lanes.forEach(function (lane, i) {
       var y = top + i * laneH;
       root.appendChild(svg('rect', { 'class': 'dag__lane-bg' + (i % 2 ? ' dag__lane-bg--alt' : ''), x: 0, y: y, width: W, height: laneH }));
-      root.appendChild(svg('text', { 'class': 'dag__lane-label', x: 12, y: y + laneH / 2 + 4, text: CF.LANE_LABELS[lane] }));
+      root.appendChild(svg('text', { 'class': 'dag__lane-label', x: 10, y: y + laneH / 2 + 4, text: compact && lane === 'human' ? 'Human' : CF.LANE_LABELS[lane] }));
     });
 
-    var stepMs = niceStep(total);
+    var stepMs = niceStep(total, compact ? 4 : 8);
     for (var t = 0; t <= total; t += stepMs) {
       var tx = x(t);
       root.appendChild(svg('line', { 'class': 'dag__tick', x1: tx, x2: tx, y1: top - 6, y2: top + lanes.length * laneH }));
@@ -168,8 +186,8 @@
     var layout = flat.map(function (f) {
       var a = f.a;
       var w = Math.max(x(a.endMs) - x(a.startMs), 8);
-      var y = top + laneIndex(a.lane) * laneH + 10;
-      return { x: x(a.startMs), y: y, w: w, h: laneH - 20, cy: y + (laneH - 20) / 2 };
+      var y = top + laneIndex(a.lane) * laneH + 17;
+      return { x: x(a.startMs), y: y, w: w, h: laneH - 27, cy: y + (laneH - 27) / 2 };
     });
 
     var edgeGroup = svg('g', { 'aria-hidden': 'true' });
@@ -209,10 +227,15 @@
       var long = channelShort(a.channel) + ' ' + fmtMs(a.endMs - a.startMs);
       var shortLabel = channelShort(a.channel);
       var text = null;
-      if (l.w >= long.length * 6.8 + 10) { text = long; }
-      else if (l.w >= shortLabel.length * 6.8 + 10) { text = shortLabel; }
+      if (l.w >= long.length * charW + 10) { text = long; }
+      else if (l.w >= shortLabel.length * charW + 10) { text = shortLabel; }
       if (text) {
         g.appendChild(svg('text', { 'class': 'dag__bar-label' + (kind === 'fail' ? ' dag__bar-label--fail' : ''), x: l.x + 6, y: l.cy + 4, text: text }));
+      } else {
+        /* A short bar would otherwise be an unlabelled square, so its name rides above it. */
+        var out = shortLabel;
+        var flip = l.x + out.length * charW > W - 6;
+        g.appendChild(svg('text', { 'class': 'dag__bar-label dag__bar-label--out', x: flip ? l.x + l.w : l.x, y: l.y - 5, 'text-anchor': flip ? 'end' : 'start', text: out }));
       }
       root.appendChild(g);
     });
@@ -247,7 +270,7 @@
       ]));
     });
 
-    renderDag(byId('bench-dag'), trace);
+    showDag(byId('bench-dag'), trace);
     renderSteps(trace);
     byId('bench-live').textContent = 'Trace updated. ' + trace.steps.length + ' steps over ' + fmtMs(trace.totalMs) + ', ' + trace.failovers + ' failovers, ended at ' + outcome + '.';
     return trace;
@@ -335,6 +358,7 @@
       var pct = Math.min(100, Math.round((unitsInSeg / cap) * 100));
       var seg = el('div', { 'class': 'segment' + (sms.encoding === 'UCS-2' ? ' segment--ucs' : ''), title: 'Segment ' + (i + 1) + ': ' + unitsInSeg + ' of ' + cap + ' units' });
       seg.appendChild(el('div', { 'class': 'segment__fill', style: 'width:' + pct + '%' }));
+      seg.appendChild(el('span', { 'class': 'segment__text', text: (sms.segments > 1 ? 'Segment ' + (i + 1) + '  ' : '') + unitsInSeg + '/' + cap }));
       segBox.appendChild(seg);
     });
 
@@ -696,10 +720,18 @@
   function renderHero() {
     var sc = CF.getScenario('clinic-reschedule');
     var trace = CF.simulateConversationTrace(sc, { failures: { CHIME_PSTN_VOICE: 'timeout' }, inputs: ['3'] });
-    renderDag(byId('hero-dag'), trace);
+    showDag(byId('hero-dag'), trace);
+  }
+
+  function wireDagResize() {
+    if (!compactQuery) { return; }
+    var redraw = function () { dagHosts.forEach(function (h) { drawDag(h.host, h.trace); }); };
+    if (compactQuery.addEventListener) { compactQuery.addEventListener('change', redraw); }
+    else if (compactQuery.addListener) { compactQuery.addListener(redraw); }
   }
 
   function init() {
+    wireDagResize();
     wireControls();
     buildKeypad();
     wireExport();

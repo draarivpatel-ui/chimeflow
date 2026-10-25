@@ -58,6 +58,11 @@
       </div>
       <figure class="hero__figure" aria-labelledby="hero-cap">
         <div id="hero-dag" class="dag-host"></div>
+        <div class="legend legend--figure" aria-hidden="true">
+          <span class="legend__item"><i class="swatch swatch--ok"></i>Delivered</span>
+          <span class="legend__item"><i class="swatch swatch--fail"></i>Failed attempt</span>
+          <span class="legend__item"><i class="swatch swatch--human"></i>Human bridge</span>
+        </div>
         <figcaption id="hero-cap">Live output of the same engine that powers the bench. Here the clinic reminder call times out twice, text takes over, and the recipient asks for a nurse.</figcaption>
       </figure>
     </section>
@@ -152,15 +157,17 @@
         </form>
 
         <div class="bench__out">
-          <div class="stat-row" id="bench-stats" role="group" aria-label="Trace summary"></div>
-          <p class="sr-only" id="bench-live" aria-live="polite"></p>
-          <div class="panel panel--flush">
-            <div id="bench-dag" class="dag-host"></div>
-          </div>
-          <div class="legend" aria-hidden="true">
-            <span class="legend__item"><i class="swatch swatch--ok"></i>Delivered</span>
-            <span class="legend__item"><i class="swatch swatch--fail"></i>Failed attempt</span>
-            <span class="legend__item"><i class="swatch swatch--human"></i>Human bridge</span>
+          <div class="bench__live">
+            <div class="stat-row" id="bench-stats" role="group" aria-label="Trace summary"></div>
+            <p class="sr-only" id="bench-live" aria-live="polite"></p>
+            <div class="panel panel--flush">
+              <div id="bench-dag" class="dag-host"></div>
+            </div>
+            <div class="legend" aria-hidden="true">
+              <span class="legend__item"><i class="swatch swatch--ok"></i>Delivered</span>
+              <span class="legend__item"><i class="swatch swatch--fail"></i>Failed attempt</span>
+              <span class="legend__item"><i class="swatch swatch--human"></i>Human bridge</span>
+            </div>
           </div>
           <h3 class="h3">Step by step</h3>
           <ol class="steps" id="bench-steps"></ol>
