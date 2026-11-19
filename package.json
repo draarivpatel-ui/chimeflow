@@ -4,7 +4,7 @@
   "private": true,
   "description": "Omnichannel triage, guardrail and failover workbench for AWS Communication Developer Services. One static page, no dependencies.",
   "scripts": {
-    "test": "node --test tests/"
+    "test": "node --test tests/*.test.js"
   },
   "author": "Aariv Patel",
   "license": "MIT"
