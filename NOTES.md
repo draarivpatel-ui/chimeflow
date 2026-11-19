@@ -86,7 +86,7 @@ SVG because it is a data graphic. No GSAP, Lenis or Three.js, on purpose. Motion
 
 ## Verification
 
-- `npm test` runs `node --test tests/`. 179 tests pass (engine and DOM smoke). The DOM smoke
+- `npm test` runs `node --test tests/*.test.js`. 179 tests pass (engine and DOM smoke). The DOM smoke
   suite runs the real `app.js` against a small fake DOM built from the ids in `index.html`
   and drives it with clicks and changes, including keypad presses that assert the oscillator
   frequencies.
